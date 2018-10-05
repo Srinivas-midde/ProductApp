@@ -1,7 +1,10 @@
 package com.capgemini.productapp;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -48,37 +51,57 @@ public class ProductControllerTests {
 	@Test
 	public void testAddProduct() throws Exception {
 
-		/*product.setProductId(123);
-		product.setProductName("DELL");
-		product.setProductCategory("Laptop");
-		product.setProductPrice(24000);*/
-		
 		when(service.addProduct(Mockito.isA(Product.class))).thenReturn(new Product(123, "DELL", "Laptop", 24000));
 		
 		mockmvc.perform(post("/product").
-					 contentType(MediaType.APPLICATION_JSON)
+					 contentType(MediaType.APPLICATION_JSON_UTF8)
 					.content("{\"productId\": 123, \"productName\": \"DELL\", \"productCategory\": \"Laptop\", \"productPrice\": 24000 }")
 					.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.productId").exists())
+				.andExpect(jsonPath("$.productId").value(123))
 				.andDo(print());
 				
 	}
 	
-/*	@Test
-	public void testAddGreeterWhichAddsGreeterObject() throws Exception {
-		mockMvc.perform(post("/greet").
-				               contentType(MediaType.APPLICATION_JSON)
-				               .content("{\"title\": \"Hi\", \"message\": \"hello\"}")
-				               .accept(MediaType.APPLICATION_JSON))
-		                     .andExpect(status().isOk())
-		                     .andExpect(jsonPath("$.title").exists())
-		                     .andExpect(jsonPath("$.message").exists())
-		                     .andExpect(jsonPath("$.title").value("Hi"))
-		                     .andExpect(jsonPath("$.message").value("hello"))
-		                     .andDo(print());		              
+	
+	@Test
+	public void testupdateProduct() throws Exception {
+		when(service.updateProduct(Mockito.isA(Product.class))).thenReturn(new Product(123, "DELL", "Laptop", 24500));
+		
+		mockmvc.perform(put("/product").
+				contentType(MediaType.APPLICATION_JSON_UTF8)
+				.content("{\"productId\": 123, \"productName\": \"DELL\", \"productCategory\": \"Laptop\", \"productPrice\": 24000 }")
+				.accept(MediaType.APPLICATION_JSON))
+		.andDo(print())
+		.andExpect(jsonPath("$.productPrice").value(24500))
+		.andExpect(status().isOk());
+			
 	}
-*/
+	
+	public void testFindProductById() throws Exception {
+		when(service.findProductById(123)).thenReturn(new Product(124, "Dell", "Laptop", 24000));
+		
+		mockmvc.perform(get("/product/123").accept(MediaType.APPLICATION_JSON))
+						.andDo(print())
+						.andExpect(jsonPath("$.productName").value("Dell"))
+						.andExpect(status().isOk());
+	}
+	
+	@Test
+	public void testDelete() throws Exception {
+		
+		Product product = new Product(123, "DELL", "Laptop", 24000);
+	
+		
+		when(service.findProductById(123))
+					.thenReturn(product);
+		
+		mockmvc.perform(delete("/products/123").accept(MediaType.APPLICATION_JSON))
+						.andExpect(status().isOk())
+						.andDo(print());
+		
+	}
+
 	
 	
 }
